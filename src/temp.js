@@ -2,6 +2,16 @@ function arrEqual (arr1, arr2) {
 	
 }
 
+function combinationsOfPairs (arr) {
+	combinations = []
+	for (i = 0; i < arr.length; i++) {
+		for (j = i + 1; j < arr.length; j++) {
+			combinations.push([ arr[i], arr[j] ])
+		}
+	}
+	return combinations
+}
+
 function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) {
 	// dependency: fracDifference, fracQuotient, substituteFracIntoFracEquation
 }
@@ -75,6 +85,7 @@ function intHCF (a, b) {
 }
 
 function isDisjointFracTrianglePair (fracTriangle1, fracTriangle2) {
+	// no triangle is a subset of another
 	// ...
 }
 
@@ -94,17 +105,46 @@ function isVertical (fracLineSegment) {
 	// dependency: arrEqual
 }
 
-function nextFracVertex (fracVertex1, fracVertex2, fracEdges) {
-	// dependency: arrEqual
-}
-
 function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
-	// dependency: unorderedCutFracPointsOfTwoFracTriangles, removeDuplicates, arrEqual, sortFrac
-}
-
-function partitionOfFracTrianglesByUnion (...fracTriangles) {
-	// ...
-	// example of return: [ [ fracTriangle1, fracTriangle2 ], [ fracTriangle3 ] ]
+	cutPoints = fracTriangles.map(function (fracTriangle) {
+		return [
+			[ fracTriangle[0], fracTriangle[1] ],
+			[ fracTriangle[1], fracTriangle[2] ],
+			[ fracTriangle[0], fracTriangle[2] ]
+		]
+	})
+	for (i = 0; i < fracTriangles.length; i++) {
+		for (j = i + 1; j < fracTriangles.length; j++) {
+			unorderedCutPoints = unorderedCutFracPointsOfTwoFracTriangles(fracTriangles[i], fracTriangles[j])
+			cutPoints[i][0] = cutPoints[i][0].concat(unorderedCutPoints.a)
+			cutPoints[i][1] = cutPoints[i][1].concat(unorderedCutPoints.b)
+			cutPoints[i][2] = cutPoints[i][2].concat(unorderedCutPoints.c)
+			cutPoints[j][0] = cutPoints[j][0].concat(unorderedCutPoints.d)
+			cutPoints[j][1] = cutPoints[j][1].concat(unorderedCutPoints.e)
+			cutPoints[j][2] = cutPoints[j][2].concat(unorderedCutPoints.f)
+		}
+	}
+	for (i = 0; i < cutPoints.length; i++) {
+		for (j = 0; j < 3; j++) {
+			cutPoints[i][j] = removeDuplicates(cutPoints[i][j])
+			cutPoints[i][j].sort(function (cutPointA, cutPointB) {
+				if (arrEqual(cutPointA[0], cutPointB[0])) {
+					return sortFrac(cutPointA[1], cutPointB[1])
+				} else {
+					return sortFrac(cutPointA[0], cutPointB[0])
+				}
+			})
+		}
+	}
+	result = []
+	for (i = 0; i < cutPoints.length; i++) {
+		for (j = 0; j < 3; j++) {
+			for (k = 1; k < cutPoints[i][j].length; k++) {
+				result.push([ cutPoints[i][j][k-1], cutPoints[i][j][k] ])
+			}
+		}
+	}
+	return result
 }
 
 function removeDuplicates (arr) {
