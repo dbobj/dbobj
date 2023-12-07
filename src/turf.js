@@ -11,7 +11,7 @@ function arrEqual (arr1, arr2) { // OK
 	}
 }
 
-function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) {
+function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) { // OK
 	if (fracEquation[0]) {
 		fracX = fracQuotient(fracDifference(fracEquation[1], nonVerticalFracEquation[1]), fracDifference(nonVerticalFracEquation[0], fracEquation[0]))
 	} else {
@@ -21,13 +21,13 @@ function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEq
 	return [ fracX, fracY ]
 }
 
-function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSegment2) {
+function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSegment2) { // OK
 	if (isVertical(fracLineSegment2)) {
 		return cutFracPointOfNonParallelFracLineSegments(fracLineSegment2, fracLineSegment1)
 	}
 	fracEquation1 = fracEquationFromTwoFracPoints(...fracLineSegment1)
 	fracEquation2 = fracEquationFromTwoFracPoints(...fracLineSegment2)
-	cutFracPoint = cutPointOfNonParallelFracEquations(fracEquation1, fracEquation2)
+	cutFracPoint = cutFracPointOfNonParallelFracEquations(fracEquation1, fracEquation2)
 	if (fracProduct(fracDifference(fracLineSegment2[0][0], cutFracPoint[0]), fracDifference(fracLineSegment2[1][0], cutFracPoint[0])) < 0) {
 		return cutFracPoint
 	} else {
@@ -35,7 +35,7 @@ function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSe
 	}
 }
 
-function fracDifference (fracA, fracB) { // OK
+function fracDifference (fracA, fracB) {
 	if (fracA && fracB) {
 		return fracReduce([ fracA[0] * fracB[1] - fracB[0] * fracA[1] , fracA[1] * fracB[1] ])
 	} else {
@@ -43,7 +43,7 @@ function fracDifference (fracA, fracB) { // OK
 	}
 }
 
-function fracEquationFromTwoFracPoints (fracPointA, fracPointB) {
+function fracEquationFromTwoFracPoints (fracPointA, fracPointB) { // OK
 	// [ m, c ] means y = mx + c while [ undefined, alpha ] means x = alpha
 	fracSlope = fracSlopeFromTwoFracPoints(fracPointA, fracPointB)
 	fracX = fracPointA[0]
@@ -55,7 +55,7 @@ function fracEquationFromTwoFracPoints (fracPointA, fracPointB) {
 	}
 }
 
-function fracInequalitiesOfFracTriangle (fracTriangle) {
+function fracInequalitiesOfFracTriangle (fracTriangle) { // OK
 	// fracTriangle = [ fracPointA, fracPointB, fracPointC ]
 	fracVertices = fracTriangle
 	fracVertices.sort(function (fracVertexA, fracVertexB) {
@@ -320,7 +320,7 @@ function unionOfManyFracTraiangles (...fracTriangles) {
 	// ...
 }
 
-function unorderedCutFracPointsOfTwoFracTriangles (fracTriangle1, fracTriangle2) { // OK
+function unorderedCutFracPointsOfTwoFracTriangles (fracTriangle1, fracTriangle2) {
 	fracLineSegments1 = {
 		a: [ fracTriangle1[0], fracTriangle1[1] ],
 		b: [ fracTriangle1[1], fracTriangle1[2] ],
