@@ -326,26 +326,23 @@ function nextFracVertex (fracVertex1, fracVertex2, fracEdges) { // OK
 	}
 }
 
-function orderedCutPointsOfManyFracTriangles (...fracTriangles) {
-	fracLineSegments = fracTriangles.map(function (fracTriangle) {
+function partitionOfEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
+	cutPoints = fracTriangles.map(function (fracTriangle) {
 		return [
 			[ fracTriangle[0], fracTriangle[1] ],
 			[ fracTriangle[1], fracTriangle[2] ],
 			[ fracTriangle[0], fracTriangle[2] ]
 		]
 	})
-	cutPoints = fracTriangles.map(function () {
-		return [ [], [], [] ]
-	})
 	for (i = 0; i < fracTriangles.length; i++) {
 		for (j = i + 1; j < fracTriangles.length; j++) {
-			result = unorderedCutPointsOfTwoFracTriangles(fracTriangles[i], fracTriangles[j])
-			cutPoints[i][0] = cutPoints[i][0].concat(result.a)
-			cutPoints[i][1] = cutPoints[i][1].concat(result.b)
-			cutPoints[i][2] = cutPoints[i][2].concat(result.c)
-			cutPoints[j][0] = cutPoints[j][0].concat(result.d)
-			cutPoints[j][1] = cutPoints[j][1].concat(result.e)
-			cutPoints[j][2] = cutPoints[j][2].concat(result.f)
+			unorderedCutPoints = unorderedCutPointsOfTwoFracTriangles(fracTriangles[i], fracTriangles[j])
+			cutPoints[i][0] = cutPoints[i][0].concat(unorderedCutPoints.a)
+			cutPoints[i][1] = cutPoints[i][1].concat(unorderedCutPoints.b)
+			cutPoints[i][2] = cutPoints[i][2].concat(unorderedCutPoints.c)
+			cutPoints[j][0] = cutPoints[j][0].concat(unorderedCutPoints.d)
+			cutPoints[j][1] = cutPoints[j][1].concat(unorderedCutPoints.e)
+			cutPoints[j][2] = cutPoints[j][2].concat(unorderedCutPoints.f)
 		}
 	}
 	for (i = 0; i < cutPoints.length; i++) {
@@ -360,11 +357,15 @@ function orderedCutPointsOfManyFracTriangles (...fracTriangles) {
 			})
 		}
 	}
-	return cutPoints
-}
-
-function partitionOfEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
-
+	result = []
+	for (i = 0; i < cutPoints.length; i++) {
+		for (j = 0; j < 3; j++) {
+			for (k = 1; k < cutPoints[i][j].length; k++) {
+				result.push([ cutPoints[i][j][k-1], cutPoints[i][j][k] ])
+			}
+		}
+	}
+	return results
 }
 
 function removeDuplicates (arr) {
