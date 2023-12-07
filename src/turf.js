@@ -11,16 +11,6 @@ function arrEqual (arr1, arr2) { // OK
 	}
 }
 
-function combinationsOfPairs (arr) { // OK
-	combinations = []
-	for (i = 0; i < arr.length; i++) {
-		for (j = i + 1; j < arr.length; j++) {
-			combinations.push([ arr[i], arr[j] ])
-		}
-	}
-	return combinations
-}
-
 function fracDifference (fracA, fracB) { // OK
 	if (fracA && fracB) {
 		return fracReduce([ fracA[0] * fracB[1] - fracB[0] * fracA[1] , fracA[1] * fracB[1] ])
