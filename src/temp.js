@@ -36,24 +36,46 @@ function fracInequalitiesOfFracTriangle (fracTriangle) {
 	// [ [ m, c ], sign ] means y is "greater than or equal to" (for sign = 1) or "less than or equal to" (for sign = -1) mx + c
 }
 
-function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) { // NO DEPENDENCY
-	// dependency: fracSum, fracProduct, fracPointInFracTriangle
+function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) {
 	// return false for boundary case
+	A = fracLineSegment[0]
+	B = fracLineSegment[1]
+	midpoint = [ fracProduct(fracSum(A[0], B[0]), [ 1, 2 ]), fracProduct(fracSum(A[1], B[1]), [ 1, 2 ]) ]
+	for (fracTriangle of fracTriangles) {
+		if (fracPointInFracTriangle(midpoint, fracTriangle) == "interior") {
+			return true
+		}
+	}
+	return false
 }
 
 function fracPointInFracTriangle (fracPoint, fracTriangle) {
-	// dependency: fracInequalitiesOfFracTriangle, fracPointSatisfiesFracInequalities
-	// return true for boundary case
+	return fracPointSatisfiesFracInequalities(fracPoint, fracInequalitiesOfFracTriangle(fracTriangle))
 }
 
 function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) {
-	// dependency: fracPointSatisfiesFracInequality
-	// return true for boundary case
+	result = fracInequalities.map(function (fracInequality) {
+		return fracPointSatisfiesFracInequality(fracPoint, fracInequality)
+	})
+	if (result.indexOf("exterior") > -1) {
+		return "exterior"
+	}
+	if (result.indexOf("boundary") > -1) {
+		return "boundary"
+	}
+	return "interior"
 }
 
 function fracPointSatisfiesFracInequality (fracPoint, fracInequality) {
-	// dependency: substituteFracIntoFracEquation
-	// return true for boundary case
+	test = substituteFracIntoFracEquation(fracPoint[0], fracInequality[0])
+	if (arrEqual(fracPoint[1], test)) {
+		return "boundary"
+	}
+	if (((fracPoint[1] > test) - 0.5) * fracInequality[1] > 0) {
+		return "interior"
+	} else {
+		return "exterior"
+	}
 }
 
 function fracProduct (fracA, fracB) {
@@ -84,11 +106,6 @@ function intHCF (a, b) {
 	
 }
 
-function isDisjointFracTrianglePair (fracTriangle1, fracTriangle2) {
-	// no triangle is a subset of another
-	// ...
-}
-
 function isNewElement (testElement, arr) {
 	// dependency: arrEqual
 }
@@ -103,6 +120,16 @@ function isSubsetOf (fracTriangle1, fracTriangle2) {
 
 function isVertical (fracLineSegment) {
 	// dependency: arrEqual
+}
+
+function nextFracVertexIndices (thisFracVertex, fracEdges) {
+	for (i = 0; i < fracEdges.length; i++) {
+		for (j = 0; j < 2; j++) {
+			if (arrEqual(fracEdges[i][j], thisFracVertex)) {
+				return [ i, 1-j ]
+			}
+		}
+	}
 }
 
 function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
@@ -160,13 +187,27 @@ function substituteFracIntoFracEquation (fracX, fracEquation) {
 	// fracEquation is not a vertical line
 }
 
-function unionOfManyConnectedFracTriangles (...connectedFracTriangles) {
-	// ...
-	// return polygon
-}
-
 function unionOfManyFracTraiangles (...fracTriangles) {
-	// ...
+	fracEdges = partitionOfFracEdgesByUnionOfManyFracTraiangles(...fracTriangles).filter(function (fracEdge) {
+		return !fracLineSegmentInUnionOfFracTriangles(fracEdge, ...fracTriangles)
+	})
+	simplePolygons = []
+	while (fracEdges.length > 0) {
+		simplePolygon = fracEdges[fracEdges.length - 1]
+		fracEdges.pop()
+		while (!arrEqual(simplePolygon[simplePolygon.length - 1], simplePolygon[0])) {
+			indices = nextFracVertexIndeices(simplePolygon[simplePolygon.length - 1], fracEdges)
+			i = indices[0]
+			j = indices[1]
+			simplePolygon.push(fracEdges[i][j])
+			arr1 = (i > 0) ? fracEdges.slice(0, i) : []
+			arr2 = (i < fracEdges.length - 1) ? fracEdges.slice(i + 1) : []
+			fracEdges = arr1.concat(arr2)
+		}
+		simplePolygons.push(simplePolygon)
+	}
+	
+
 	// return multipolygon
 }
 
