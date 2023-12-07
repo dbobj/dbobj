@@ -165,7 +165,8 @@ function fracQuotient (fracA, fracB) {
 		return fracProduct(fracA, [ fracB[1], fracB[0] ])
 	} else {
 		return undefined
-	}}
+	}
+}
 
 function fracReduce (frac) {
 	if (!frac || frac[1] == 0) {
