@@ -387,11 +387,7 @@ function substituteFracIntoFracEquation (fracX, fracEquation) { // OK
 	return fracSum(fracProduct(fracEquation[0], fracX), fracEquation[1])
 }
 
-function unionOfManyFracTriangles (...fracTriangles) {
-	
-}
-
-function unionOfTwoFracTraiangles (fracTriangle1, fracTriangle2) {
+function unionOfManyFracTraiangles (...fracTriangles) {
 	// return multipolygon
 	if (isSubsetOf(fracTriangle1, fracTriangle2) {
 		result = [ [ [ ...fracTriangle2, fracTriangle2[0] ] ] ]
