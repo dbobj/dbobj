@@ -174,6 +174,17 @@ function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
 	return result
 }
 
+function partitionOfSimplePolygonsByDisjointness (simplePolygons) {
+	subsets = simplePolygons.map(function () {
+		return []
+	})
+	for (i = 0; i < simplePolygons.length; i++) {
+		for (j = 0; j < simplePolygons.length; j++) {
+			
+		}
+	}
+}
+
 function removeDuplicates (arr) {
 	// dependency: isNewElement
 }
