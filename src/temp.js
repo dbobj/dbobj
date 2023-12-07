@@ -7,7 +7,7 @@ function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEq
 }
 
 function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSegment2) {
-	// dependency: isVertical, fracEquationFromTwoFracPoints, cutPointOfNonParallelFracEquations, fracDifference, fracProduct
+	// dependency: isVertical, fracEquationFromTwoFracPoints, cutFracPointOfNonParallelFracEquations, fracDifference, fracProduct
 }
 
 function fracDifference (fracA, fracB) {
@@ -26,27 +26,24 @@ function fracInequalitiesOfFracTriangle (fracTriangle) {
 	// [ [ m, c ], sign ] means y is "greater than or equal to" (for sign = 1) or "less than or equal to" (for sign = -1) mx + c
 }
 
-function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) {
+function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) { // NO DEPENDENCY
 	// dependency: fracSum, fracProduct, fracPointInFracTriangle
-	// return false for boundary cases
+	// return false for boundary case
 }
 
 function fracPointInFracTriangle (fracPoint, fracTriangle) {
-	return fracPointSatisfiesFracInequalities(fracPoint, fracInequalitiesOfFracTriangle(fracTriangle))
+	// dependency: fracInequalitiesOfFracTriangle, fracPointSatisfiesFracInequalities
+	// return true for boundary case
 }
 
 function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) {
-	for (fracInequality of fracInequalities) {
-		if (!fracPointSatisfiesFracInequality(fracPoint, fracInequality)) {
-			return false
-		}
-	}
-	return true
+	// dependency: fracPointSatisfiesFracInequality
+	// return true for boundary case
 }
 
 function fracPointSatisfiesFracInequality (fracPoint, fracInequality) {
-	test = substituteFracIntoFracEquation(fracPoint[0], fracInequality[0])
-	return (fracPoint[1] == test || ((fracPoint[1] > test) - 0.5) * fracInequality[1] > 0)
+	// dependency: substituteFracIntoFracEquation
+	// return true for boundary case
 }
 
 function fracProduct (fracA, fracB) {
@@ -85,10 +82,6 @@ function isNewElement (testElement, arr) {
 	// dependency: arrEqual
 }
 
-function isNewFracEdge (testFracEdge, fracEdges) {
-	// dependency: arrEqual
-}
-
 function isParallelTo (fracLineSegment1, fracLineSegment2) {
 	// dependency: fracSlopeFromTwoFracPoints, arrEqual
 }
@@ -116,7 +109,7 @@ function partitionOfFracTrianglesByUnion (...fracTriangles) {
 
 function removeDuplicates (arr) {
 	// dependency: isNewElement
-}		
+}
 
 function sortFrac (fracA, fracB) {
 	// dependency: fracDifference
