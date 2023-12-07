@@ -391,11 +391,12 @@ function unionOfManyFracTraiangles (...fracTriangles) {
 	// return multipolygon
 	if (isSubsetOf(fracTriangle1, fracTriangle2) {
 		result = [ [ [ ...fracTriangle2, fracTriangle2[0] ] ] ]
-		break
 	} else if (isSubsetOf(fracTriangle2, fracTriangle1) {
 		result = [ [ [ ...fracTriangle1, fracTriangle1[0] ] ] ]
-		break
 	} else {
+		edges = partitionOfEdgesByUnionOfManyFracTraiangles(...fracTriangles)
+
+		
 		edgesOfUnion = []
 		fracLineSegments1 = [ [ fracTriangle1[0], fracTriangle1[1] ], [ fracTriangle1[1], fracTriangle1[2] ], [ fracTriangle1[0], fracTriangle1[2] ] ]
 		fracLineSegments2 = [ [ fracTriangle2[0], fracTriangle2[1] ], [ fracTriangle2[1], fracTriangle2[2] ], [ fracTriangle2[0], fracTriangle2[2] ] ]
