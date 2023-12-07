@@ -21,22 +21,6 @@ function combinationsOfPairs (arr) { // OK
 	return combinations
 }
 
-function compareFracX (fracX1, fracX2) { // OK
-	adaptedFracX1 = fracX1
-	adaptedFracX1.sort(sortFrac)
-	adaptedFracX2 = fracX2
-	adaptedFracX2.sort(sortFrac)
-	adaptedFracX = [ ...adaptedFracX1, ...adaptedFracX2 ]
-	adaptedFracX.sort(sortFrac)
-	if (arrEqual(adaptedFracX[0], adaptedFracX1[0]) && arrEqual(adaptedFracX[1], adaptedFracX1[1]) && arrEqual(adaptedFracX[2], adaptedFracX2[0]) && arrEqual(adaptedFracX[3], adaptedFracX2[1])) {
-		return null
-	}
-	if (arrEqual(adaptedFracX[0], adaptedFracX2[0]) && arrEqual(adaptedFracX[1], adaptedFracX2[1]) && arrEqual(adaptedFracX[2], adaptedFracX1[0]) && arrEqual(adaptedFracX[3], adaptedFracX1[1])) {
-		return null
-	}
-	return [ adaptedFracX[1], adaptedFracX[2] ]
-}
-
 function fracDifference (fracA, fracB) { // OK
 	if (fracA && fracB) {
 		return fracReduce([ fracA[0] * fracB[1] - fracB[0] * fracA[1] , fracA[1] * fracB[1] ])
@@ -211,27 +195,8 @@ function intersectionOfNonParallelFracLineSegments (fracLineSegment1, fracLineSe
 	}
 }
 
-function intersectionOfParallelFracLineSegments (fracLineSegment1, fracLineSegment2) { // OK
-	fracEquation1 = fracEquationFromTwoFracPoints(...fracLineSegment1)
-	fracEquation2 = fracEquationFromTwoFracPoints(...fracLineSegment2)
-	if (arrEqual(fracEquation1[1], fracEquation2[1])) {
-		if (fracEquation1[0]) {
-			result = compareFracX([ fracLineSegment1[0][0], fracLineSegment1[1][0] ], [ fracLineSegment2[0][0], fracLineSegment2[1][0] ])
-			if (result) {
-				return result.map(function (fracX) {
-					return [ fracX, substituteFracIntoFracEquation(fracX, fracEquation1) ]
-				})
-			}
-		} else {
-			result = compareFracX([ fracLineSegment1[0][1], fracLineSegment1[1][1] ], [ fracLineSegment2[0][1], fracLineSegment2[1][1] ])
-			if (result) {
-				return result.map(function (fracY) {
-					return [ fracEquation1[1], fracY ]
-				})
-			}
-		}
-	}
-	return null
+function isDisjointFracTrianglePair (fracTriangle1, fracTriangle2) {
+	// ...
 }
 
 function isNewElement (testElement, arr) { // OK
@@ -243,7 +208,7 @@ function isNewElement (testElement, arr) { // OK
 	return true
 }
 
-function isnewFracEdge (testFracEdge, fracEdges) { // OK
+function isNewFracEdge (testFracEdge, fracEdges) { // OK
 	for (fracEdge of fracEdges) {
 		if (arrEqual(fracEdge[0], testFracEdge[0]) && arrEqual(fracEdge[1], testFracEdge[1])) {
 			return false
@@ -268,7 +233,7 @@ function isParallelTo (fracLineSegment1, fracLineSegment2) { // OK
 function isSubsetOf (fracTriangle1, fracTriangle2) { // OK
 	// return true if and only if fracTriangle1 is a subset of fracTriangle2
 	for (fracPoint of fracTriangle1) {
-		if (fracPointInFracTriangle(fracPoint, fracTriangle2) == "exterior") {
+		if (!fracPointInFracTriangle(fracPoint, fracTriangle2)) {
 			return false
 		}
 	}
@@ -329,6 +294,11 @@ function partitionOfEdgesByUnionOfManyFracTraiangles (...fracTriangles) { // OK
 		}
 	}
 	return results
+}
+
+function partitionOfFracTrianglesByUnion (...fracTriangles) {
+	// ...
+	// example of return: [ [ fracTriangle1, fracTriangle2 ], [ fracTriangle3 ] ]
 }
 
 function removeDuplicates (arr) { // OK
