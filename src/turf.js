@@ -271,6 +271,15 @@ function intersectionOfParallelFracLineSegments (fracLineSegment1, fracLineSegme
 	return null
 }
 
+function isNewElement (testElement, arr) {
+	for (element of arr) {
+		if (arrEqual(element, testElement) {
+			return false
+		}
+	}
+	return true
+}
+
 function isnewFracEdge (testFracEdge, fracEdges) { // OK
 	for (fracEdge of fracEdges) {
 		if (arrEqual(fracEdge[0], testFracEdge[0]) && arrEqual(fracEdge[1], testFracEdge[1])) {
@@ -317,7 +326,6 @@ function nextFracVertex (fracVertex1, fracVertex2, fracEdges) { // OK
 	}
 }
 
-
 function orderedCutPointsOfManyFracTriangles (...fracTriangles) {
 	fracLineSegments = fracTriangles.map(function (fracTriangle) {
 		return [
@@ -347,6 +355,16 @@ function orderedCutPointsOfManyFracTriangles (...fracTriangles) {
 function partitionOfEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
 
 }
+
+function removeDuplicates (arr) {
+	result = []
+	for (element of arr) {
+		if (isNewElement(element, result)) {
+			result.push(element)
+		}
+	}
+	return result
+}		
 
 function sortFrac (fracA, fracB) { // OK
 	return (fracDifference(fracA, fracB)[0] > 0) - 0.5
