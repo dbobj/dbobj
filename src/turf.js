@@ -348,7 +348,18 @@ function orderedCutPointsOfManyFracTriangles (...fracTriangles) {
 			cutPoints[j][2] = cutPoints[j][2].concat(result.f)
 		}
 	}
-	// ...
+	for (i = 0; i < cutPoints.length; i++) {
+		for (j = 0; j < 3; j++) {
+			cutPoints[i][j] = removeDuplicates(cutPoints[i][j])
+			cutPoints[i][j].sort(function (cutPointA, cutPointB) {
+				if (arrEqual(cutPointA[0], cutPointB[0])) {
+					return sortFrac(cutPointA[1], cutPointB[1])
+				} else {
+					return sortFrac(cutPointA[0], cutPointB[0])
+				}
+			})
+		}
+	}
 	return cutPoints
 }
 
