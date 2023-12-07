@@ -97,12 +97,16 @@ function fracInequalitiesOfFracTriangle (fracTriangle) { // OK
 	}
 }
 
-function fracLineSegmentInFracTriangle (fracLineSegment, fracTriangle) { // OK
-	// either "interior" or "boundary"
+function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) { // OK
 	A = fracLineSegment[0]
 	B = fracLineSegment[1]
 	midpoint = [ fracProduct(fracSum(A[0], B[0]), [ 1, 2 ]), fracProduct(fracSum(A[1], B[1]), [ 1, 2 ]) ]
-	return fracPointInFracTriangle(midpoint, fracTriangle)
+	for (fracTriangle of fracTriangles) {
+		if (fracPointInFracTriangle(midpoint, fracTriangle) {
+			return true
+		}
+	}
+	return false
 }
 
 function fracPointInFracTriangle (fracPoint, fracTriangle) { // OK
@@ -110,27 +114,17 @@ function fracPointInFracTriangle (fracPoint, fracTriangle) { // OK
 }
 
 function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) { // OK
-	evaluation = fracInequalities.map(function (fracInequality) {
-		return fracPointSatisfiesFracInequality(fracPoint, fracInequality)
-	})
-	if (evaluation.indexOf("exterior") > -1) {
-		return "exterior"
+	for (fracInequality of fracInequalities) {
+		if (!fracPointSatisfiesFracInequality(fracPoint, fracInequality)) {
+			return false
+		}
 	}
-	if (evaluation.indexOf("boundary") > -1) {
-		return "boundary"
-	}
-	return "interior"
+	return true
 }
 
 function fracPointSatisfiesFracInequality (fracPoint, fracInequality) { // OK
 	test = substituteFracIntoFracEquation(fracPoint[0], fracInequality[0])
-	if (fracPoint[1] == test) {
-		return "boundary"
-	} else if (((fracPoint[1] > test) - 0.5) * fracInequality[1] > 0) {
-		return "interior"
-	} else {
-		return "exterior"
-	}
+	return (fracPoint[1] == test || ((fracPoint[1] > test) - 0.5) * fracInequality[1] > 0)
 }
 
 function fracProduct (fracA, fracB) { // OK
@@ -193,37 +187,6 @@ function intHCF (a, b) { // OK
 	}
 }
 
-function intersectionOfFracLineSegmentAndFracTriangle (fracLineSegment, fracTriangle) { // OK
-	fracEdges = [ [ fracTriangle[0], fracTriangle[1] ], [ fracTriangle[1], fracTriangle[2] ], [ fracTriangle[0], fracTriangle[2] ] ]
-	intersectionFracPoints = []
-	for (fradEdge of fracEdges) {
-		if (isParallelTo(fracEdge, fracLineSegment) {
-			return intersectionOfParallelFracLineSegments(fradEdge, fracLineSegment)
-		} else {
-			intersectionFracPoint = intersectionOfNonParallelFracLineSegments(fracEdge, fragLineSegment)
-			if (intersectionFracPoint && (intersectionFracPoints.length == 0 || !arrEqual(intersectionFracPoint, intersectionFracPoints[0]))) {
-				intersectionFracPoints.push(intersectionFracPoint)
-			}
-		}
-	}
-	if (intersectionFracPoints.length == 0) {
-		return null
-	}
-	if (intersectionFracPoints.length == 1) {
-		if (arrEqual(fracTriangle[0], intersectionFracPoints[0]) || arrEqual(fracTriangle[1], intersectionFracPoints[0]) || arrEqual(fracTriangle[2], intersectionFracPoints[0])) {
-			return null
-		}
-		if (fracPointInFracTriangle(fracLineSegment[0], fracTriangle) == "interior") {
-			return [ fracLineSegment[0], intersectionFracPoints[0] ]
-		}
-		if (fracPointInFracTriangle(fracLineSegment[1], fracTriangle) == "interior") {
-			return [ fracLineSegment[1], intersectionFracPoints[0] ]
-		}
-		return null
-	}
-	return intersectionFracPoints
-}
-
 function intersectionOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) { // OK
 	if (fracEquation[0]) {
 		fracX = fracQuotient(fracDifference(fracEquation[1], nonVerticalFracEquation[1]), fracDifference(nonVerticalFracEquation[0], fracEquation[0]))
@@ -241,10 +204,10 @@ function intersectionOfNonParallelFracLineSegments (fracLineSegment1, fracLineSe
 	fracEquation1 = fracEquationFromTwoFracPoints(...fracLineSegment1)
 	fracEquation2 = fracEquationFromTwoFracPoints(...fracLineSegment2)
 	intersection = intersectionOfNonParallelFracEquations(fracEquation1, fracEquation2)
-	if (fracProduct(fracDifference(fracLineSegment2[0][0], intersection[0]), fracDifference(fracLineSegment2[1][0], intersection[0])) > 0) {
-		return null
-	} else {
+	if (fracProduct(fracDifference(fracLineSegment2[0][0], intersection[0]), fracDifference(fracLineSegment2[1][0], intersection[0])) < 0) {
 		return intersection
+	} else {
+		return null
 	}
 }
 
@@ -394,28 +357,10 @@ function unionOfManyFracTraiangles (...fracTriangles) {
 	} else if (isSubsetOf(fracTriangle2, fracTriangle1) {
 		result = [ [ [ ...fracTriangle1, fracTriangle1[0] ] ] ]
 	} else {
-		edges = partitionOfEdgesByUnionOfManyFracTraiangles(...fracTriangles)
-
-		
-		edgesOfUnion = []
-		fracLineSegments1 = [ [ fracTriangle1[0], fracTriangle1[1] ], [ fracTriangle1[1], fracTriangle1[2] ], [ fracTriangle1[0], fracTriangle1[2] ] ]
-		fracLineSegments2 = [ [ fracTriangle2[0], fracTriangle2[1] ], [ fracTriangle2[1], fracTriangle2[2] ], [ fracTriangle2[0], fracTriangle2[2] ] ]
-		for (fracLineSegment1 of fracLineSegments1) {
-			edgeOfIntersection = intersectionOfFracLineSegmentAndFracTriangle(fracLineSegment1, fracTriangle2)
-			if (edgeOfIntersection) {
-				edgesOfUnion.concat(complementOfOverlappingFracLineSegments(fracLineSegment1, edgeOfIntersection))
-				if (fracLineSegmentInFracTriangle(edgeOfIntersection) == "boundary") {
-					edgesOfUnion.push(edgeOfIntersection)
-				}
-			}
-		}
-		for (fracLineSegment2 of fracLineSegments2) {
-			edgeOfIntersection = intersectionOfFracLineSegmentAndFracTriangle(fracLineSegment2, fracTriangle2)
-			if (edgeOfIntersection) {
-				edgesOfUnion.concat(complementOfOverlappingFracLineSegments(fracLineSegment2, edgeOfIntersection))
-			}
-		}
-		if (edgesOfUnion.length > 0) {
+		edges = partitionOfEdgesByUnionOfManyFracTraiangles(...fracTriangles).filter(function (edge) {
+			return !fracLineSegmentInUnionOfFracTriangles (edge, ...fracTriangles)
+		})
+		if (edgesOfUnion.length > 6) {
 			result = edgesOfUnion[0]
 			while (!arrEqual(result[result.length - 1], result[0])) {
 				result.push(nextFracVertex(result[result.length - 2], result[result.length - 1], edgesOfIntersection))
