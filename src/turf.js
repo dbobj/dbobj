@@ -319,6 +319,17 @@ function substituteFracIntoFracEquation (fracX, fracEquation) { // OK
 	// fracEquation is not a vertical line
 	return fracSum(fracProduct(fracEquation[0], fracX), fracEquation[1])
 }
+/*
+function partitionOfFracTrianglesByUnion (...fracTriangles) {
+	// ...
+	// example of return: [ [ fracTriangle1, fracTriangle2 ], [ fracTriangle3 ] ]
+}
+*/
+
+function unionOfManyConnectedFracTriangles (...connectedFracTriangles) {
+	// return polygon
+	// ...
+}
 
 function unionOfManyFracTraiangles (...fracTriangles) {
 	// return multipolygon
