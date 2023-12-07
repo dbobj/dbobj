@@ -53,6 +53,11 @@ function fracPointInFracTriangle (fracPoint, fracTriangle) {
 	return fracPointSatisfiesFracInequalities(fracPoint, fracInequalitiesOfFracTriangle(fracTriangle))
 }
 
+function fracPointInSimplePolygon (fracPoint, simplePolygon) {
+	// either interior (true) or exterior (false)
+	// ...
+}
+
 function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) {
 	result = fracInequalities.map(function (fracInequality) {
 		return fracPointSatisfiesFracInequality(fracPoint, fracInequality)
@@ -112,6 +117,11 @@ function isNewElement (testElement, arr) {
 
 function isParallelTo (fracLineSegment1, fracLineSegment2) {
 	// dependency: fracSlopeFromTwoFracPoints, arrEqual
+}
+
+function isReflexAngle (fracPoint, simplePolygon) {
+	// dependency: fracPointInSimplePolygon
+	// ...
 }
 
 function isSubsetOf (fracTriangle1, fracTriangle2) {
@@ -175,12 +185,14 @@ function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
 }
 
 function partitionOfSimplePolygonsByDisjointness (simplePolygons) {
-	subsets = simplePolygons.map(function () {
+	supersets = simplePolygons.map(function () {
 		return []
 	})
 	for (i = 0; i < simplePolygons.length; i++) {
 		for (j = 0; j < simplePolygons.length; j++) {
-			
+			if (i != j && fracPointInSimplePolygon(simplePolygons[i][0], simplePolygons[j])) {
+				supersets[i].push(j)
+			}
 		}
 	}
 }
@@ -198,6 +210,11 @@ function substituteFracIntoFracEquation (fracX, fracEquation) {
 	// fracEquation is not a vertical line
 }
 
+function triangulateSimplePolygon (simplePolygon) {
+	// dependency: isReflexAngle
+	// ...
+}
+
 function unionOfManyFracTraiangles (...fracTriangles) {
 	fracEdges = partitionOfFracEdgesByUnionOfManyFracTraiangles(...fracTriangles).filter(function (fracEdge) {
 		return !fracLineSegmentInUnionOfFracTriangles(fracEdge, ...fracTriangles)
@@ -207,7 +224,7 @@ function unionOfManyFracTraiangles (...fracTriangles) {
 		simplePolygon = fracEdges[fracEdges.length - 1]
 		fracEdges.pop()
 		while (!arrEqual(simplePolygon[simplePolygon.length - 1], simplePolygon[0])) {
-			indices = nextFracVertexIndeices(simplePolygon[simplePolygon.length - 1], fracEdges)
+			indices = nextFracVertexIndices(simplePolygon[simplePolygon.length - 1], fracEdges)
 			i = indices[0]
 			j = indices[1]
 			simplePolygon.push(fracEdges[i][j])
@@ -217,8 +234,7 @@ function unionOfManyFracTraiangles (...fracTriangles) {
 		}
 		simplePolygons.push(simplePolygon)
 	}
-	
-
+	// ...
 	// return multipolygon
 }
 
