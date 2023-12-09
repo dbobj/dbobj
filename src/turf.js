@@ -1,27 +1,12 @@
-function arrEqual (arr1, arr2) {
-	if (typeOf arr1 == "object") {
-		for (i = 0; i < arr1.length; i++) {
-			if (!arrEqual(arr1[i], arr2[i]) {
-				return false
-			}
-		}
-		return true
+function arrEqual (arr1, arr2) { // 1
+	if (typeof arr1 == "object") {
+		return (arrEqual(arr1[0], arr2[0]) && arrEqual(arr1[1], arr2[1]))
 	} else {
 		return (arr1 === arr2)
 	}
 }
 
-function combinationsOfPairs (arr) {
-	combinations = []
-	for (i = 0; i < arr.length; i++) {
-		for (j = i + 1; j < arr.length; j++) {
-			combinations.push([ arr[i], arr[j] ])
-		}
-	}
-	return combinations
-}
-
-function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) {
+function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) { // 2
 	if (fracEquation[0]) {
 		fracX = fracQuotient(fracDifference(fracEquation[1], nonVerticalFracEquation[1]), fracDifference(nonVerticalFracEquation[0], fracEquation[0]))
 	} else {
@@ -31,21 +16,58 @@ function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEq
 	return [ fracX, fracY ]
 }
 
-function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSegment2) {
+function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSegment2) { // 3
 	if (isVertical(fracLineSegment2)) {
 		return cutFracPointOfNonParallelFracLineSegments(fracLineSegment2, fracLineSegment1)
 	}
 	fracEquation1 = fracEquationFromTwoFracPoints(...fracLineSegment1)
 	fracEquation2 = fracEquationFromTwoFracPoints(...fracLineSegment2)
 	cutFracPoint = cutFracPointOfNonParallelFracEquations(fracEquation1, fracEquation2)
-	if (fracProduct(fracDifference(fracLineSegment2[0][0], cutFracPoint[0]), fracDifference(fracLineSegment2[1][0], cutFracPoint[0])) < 0) {
+	if (isVertical(fracLineSegment1)) {
+		test1 = fracProduct(fracDifference(fracLineSegment1[0][1], cutFracPoint[1]), fracDifference(fracLineSegment1[1][1], cutFracPoint[1]))
+	} else {
+		test1 = fracProduct(fracDifference(fracLineSegment1[0][0], cutFracPoint[0]), fracDifference(fracLineSegment1[1][0], cutFracPoint[0]))
+	}
+	test2 = fracProduct(fracDifference(fracLineSegment2[0][0], cutFracPoint[0]), fracDifference(fracLineSegment2[1][0], cutFracPoint[0]))
+	if (test1[0] < 0 && test2[0] < 0) {
 		return cutFracPoint
 	} else {
 		return null
 	}
 }
 
-function fracDifference (fracA, fracB) {
+function fracAreaOfSimpleFracPolygon (simpleFracPolygon) { // 4
+    fracArea = [ 0, 1 ]
+    for (i = 1; i < simpleFracPolygon.length; i++) {
+    	fracChange = fracDifference(fracProduct(simpleFracPolygon[i - 1][0], simpleFracPolygon[i][1]), fracProduct(simpleFracPolygon[i - 1][1], simpleFracPolygon[i][0]))
+        fracArea = fracSum(fracArea, fracChange)
+    }
+    return fracProduct(fracArea, [ 1, 2 ])
+}
+
+function fracAsFracStr (arr) { // 5
+	if (!arr) {
+		return undefined
+	}
+	if (typeof arr[0] == "number") {
+		return arr[0] + "/" + arr[1]
+	} else {
+		return arr.map(fracAsFracStr)
+	}
+}
+
+function fracAsNum (arr) { // 6
+	if (!arr) {
+		return undefined
+	}
+	if (typeof arr[0] == "number") {
+		return arr[0] / arr[1]
+	} else {
+		return arr.map(fracAsNum)
+	}
+}
+
+function fracDifference (fracA, fracB) { // 7
 	if (fracA && fracB) {
 		return fracReduce([ fracA[0] * fracB[1] - fracB[0] * fracA[1] , fracA[1] * fracB[1] ])
 	} else {
@@ -53,11 +75,11 @@ function fracDifference (fracA, fracB) {
 	}
 }
 
-function fracEquationFromTwoFracPoints (fracPointA, fracPointB) {
+function fracEquationFromTwoFracPoints (fracPointA, fracPointB) { // 8
 	// [ m, c ] means y = mx + c while [ undefined, alpha ] means x = alpha
 	fracSlope = fracSlopeFromTwoFracPoints(fracPointA, fracPointB)
 	fracX = fracPointA[0]
-	fracY = fracPointB[1]
+	fracY = fracPointA[1]
 	if (fracSlope) {
 		return [ fracSlope, fracDifference(fracY, fracProduct(fracSlope, fracX)) ]
 	} else {
@@ -65,9 +87,10 @@ function fracEquationFromTwoFracPoints (fracPointA, fracPointB) {
 	}
 }
 
-function fracInequalitiesOfFracTriangle (fracTriangle) {
-	// fracTriangle = [ fracPointA, fracPointB, fracPointC ]
+function fracInequalitiesOfFracTriangle (fracTriangle) { // 9
+	// fracTriangle = [ fracPointA, fracPointB, fracPointC, fracPointA ]
 	fracVertices = fracTriangle
+	fracVertices.pop()
 	fracVertices.sort(function (fracVertexA, fracVertexB) {
 		if (arrEqual(fracVertexA[0], fracVertexB[0])) {
 			return (fracDifference(fracVertexA[1], fracVertexB[1])[0] > 0) - 0.5
@@ -78,56 +101,55 @@ function fracInequalitiesOfFracTriangle (fracTriangle) {
 	fracVertexP = fracVertices[0]
 	fracVertexQ = fracVertices[1]
 	fracVertexR = fracVertices[2]
+	PQ = fracEquationFromTwoFracPoints(fracVertexP, fracVertexQ)
+	QR = fracEquationFromTwoFracPoints(fracVertexQ, fracVertexR)
+	PR = fracEquationFromTwoFracPoints(fracVertexP, fracVertexR)
 	if (arrEqual(fracVertexP[0], fracVertexQ[0])) {
 		// [ [ undefined, alpha ], sign ] means x is "greater than or equal to" (for sign = 1) or "less than or equal to" (for sign = -1) alpha
 		// [ [ m, c ], sign ] means y is "greater than or equal to" (for sign = 1) or "less than or equal to" (for sign = -1) mx + c
 		// inequalities are in the order of [ PQ, QR, PR ]
 		return [
 			[ [ undefined, fracVertexP[0] ], 1 ],
-			[ fracEquationFromTwoFracPoints(fracVertexQ, fracVertexR), -1 ],
-			[ fracEquationFromTwoFracPoints(fracVertexR, fracVertexR), 1 ]
+			[ QR, -1 ],
+			[ PR, 1 ]
 		]
 	}
 	if (arrEqual(fracVertexQ[0], fracVertexR[0])) {
 		return [
-			[ fracEquationFromTwoFracPoints(fracVertexR, fracVertexR), 1 ],
+			[ PR, 1 ],
 			[ [ undefined, fracVertexP[0] ], -1 ],
-			[ fracEquationFromTwoFracPoints(fracVertexQ, fracVertexR), -1 ]
+			[ QR, -1 ]
 		]
 	}
 	PQ = fracEquationFromTwoFracPoints(fracVertexP, fracVertexQ)
 	QR = fracEquationFromTwoFracPoints(fracVertexQ, fracVertexR)
 	PR = fracEquationFromTwoFracPoints(fracVertexP, fracVertexR)
-	if (fracVertexQ[1] < substituteFracIntoFracEquation(fracVertexQ[0], PR)) {
+	if (fracDifference(fracVertexQ[1], substituteFracIntoFracEquation(fracVertexQ[0], PR))[0] < 0) {
 		return [ [ PQ, 1 ], [ QR, 1 ], [ PR, -1 ] ]
 	} else {
 		return [ [ PQ, -1 ], [ QR, -1 ], [ PR, 1 ] ]
 	}
 }
 
-function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) {
-	// return false for boundary case
+function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangles) { // 10
+	// return "interior" or "boundary"
 	A = fracLineSegment[0]
 	B = fracLineSegment[1]
 	midpoint = [ fracProduct(fracSum(A[0], B[0]), [ 1, 2 ]), fracProduct(fracSum(A[1], B[1]), [ 1, 2 ]) ]
 	for (fracTriangle of fracTriangles) {
 		if (fracPointInFracTriangle(midpoint, fracTriangle) == "interior") {
-			return true
+			return "interior"
 		}
 	}
-	return false
+	return "boundary"
 }
 
-function fracPointInFracTriangle (fracPoint, fracTriangle) {
+function fracPointInFracTriangle (fracPoint, fracTriangle) { // 11
+	// return "interior", "boundary" or "exterior"
 	return fracPointSatisfiesFracInequalities(fracPoint, fracInequalitiesOfFracTriangle(fracTriangle))
 }
 
-function fracPointInSimplePolygon (fracPoint, simplePolygon) {
-	// either interior (true) or exterior (false)
-	// ... (1)
-}
-
-function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) {
+function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) { // 12
 	result = fracInequalities.map(function (fracInequality) {
 		return fracPointSatisfiesFracInequality(fracPoint, fracInequality)
 	})
@@ -140,19 +162,30 @@ function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) {
 	return "interior"
 }
 
-function fracPointSatisfiesFracInequality (fracPoint, fracInequality) {
-	test = substituteFracIntoFracEquation(fracPoint[0], fracInequality[0])
-	if (fracPoint[1] == test) {
-		return "boundary"
-	}
-	if (((fracPoint[1] > test) - 0.5) * fracInequality[1] > 0) {
-		return "interior"
+function fracPointSatisfiesFracInequality (fracPoint, fracInequality) { // 13
+	if (fracInequality[0][0]) {
+		test = substituteFracIntoFracEquation(fracPoint[0], fracInequality[0])
+		if (arrEqual(fracPoint[1], test)) {
+			return "boundary"
+		}
+		if (fracDifference(fracPoint[1], test)[0] * fracInequality[1] > 0) {
+			return "interior"
+		} else {
+			return "exterior"
+		}
 	} else {
-		return "exterior"
+		if (arrEqual(fracPoint[1], fracInequality[0][1])) {
+			return "boundary"
+		}
+		if (fracDifference(fracPoint[1], fracInequality[0][1])[0] * fracInequality[1] > 0) {
+			return "interior"
+		} else {
+			return "exterior"
+		}
 	}
 }
 
-function fracProduct (fracA, fracB) {
+function fracProduct (fracA, fracB) { // 14
 	if (fracA && fracB) {
 		return fracReduce([ fracA[0] * fracB[0], fracA[1] * fracB[1] ])
 	} else {
@@ -160,7 +193,7 @@ function fracProduct (fracA, fracB) {
 	}
 }
 
-function fracQuotient (fracA, fracB) {
+function fracQuotient (fracA, fracB) { // 15
 	if (fracA && fracB) {
 		return fracProduct(fracA, [ fracB[1], fracB[0] ])
 	} else {
@@ -168,7 +201,7 @@ function fracQuotient (fracA, fracB) {
 	}
 }
 
-function fracReduce (frac) {
+function fracReduce (frac) { // 16
 	if (!frac || frac[1] == 0) {
 		return undefined
 	}
@@ -183,11 +216,11 @@ function fracReduce (frac) {
 	}
 }
 
-function fracSlopeFromTwoFracPoints (fracPointA, fracPointB) {
+function fracSlopeFromTwoFracPoints (fracPointA, fracPointB) { // 17
 	return fracQuotient(fracDifference(fracPointA[1], fracPointB[1]), fracDifference(fracPointA[0], fracPointB[0]))
 }
 
-function fracSum (fracA, fracB) {
+function fracSum (fracA, fracB) { // 18
 	if (fracA && fracB) {
 		return fracReduce([ fracA[0] * fracB[1] + fracB[0] * fracA[1] , fracA[1] * fracB[1] ])
 	} else {
@@ -195,15 +228,7 @@ function fracSum (fracA, fracB) {
 	}
 }
 
-function fracVal (frac) {
-	if (frac) {
-		return frac[0] / frac[1]
-	} else {
-		return undefined
-	}
-}
-
-function intHCF (a, b) {
+function intHCF (a, b) { // 19
 	// a and b can be negative but intHCF(a, b) must be positive
 	if (b == 0) {
 		return Math.abs(a)
@@ -212,16 +237,16 @@ function intHCF (a, b) {
 	}
 }
 
-function isNewElement (testElement, arr) {
+function isNewElement (testElement, arr) { // 20
 	for (element of arr) {
-		if (arrEqual(element, testElement) {
+		if (arrEqual(element, testElement)) {
 			return false
 		}
 	}
 	return true
 }
 
-function isParallelTo (fracLineSegment1, fracLineSegment2) {
+function isParallelTo (fracLineSegment1, fracLineSegment2) { // 21
 	fracSlope1 = fracSlopeFromTwoFracPoints(...fracLineSegment1)
 	fracSlope2 = fracSlopeFromTwoFracPoints(...fracLineSegment2)
 	if (fracSlope1 && fracSlope2) {
@@ -231,36 +256,31 @@ function isParallelTo (fracLineSegment1, fracLineSegment2) {
 	}
 }
 
-function isReflexAngle (fracPoint, simplePolygon) {
-	// dependency: fracPointInSimplePolygon
-	// ... (2)
-}
-
-function isSubsetOf (fracTriangle1, fracTriangle2) {
+function isSubsetOf (fracTriangle1, fracTriangle2) { // 22
 	// return true if and only if fracTriangle1 is a subset of fracTriangle2
 	for (fracPoint of fracTriangle1) {
-		if (!fracPointInFracTriangle(fracPoint, fracTriangle2)) {
+		if (fracPointInFracTriangle(fracPoint, fracTriangle2) == "exterior") {
 			return false
 		}
 	}
 	return true
 }
 
-function isVertical (fracLineSegment) {
-	return arrEqual(fracLineSegment[0][1], fracLineSegment[1][1])
+function isVertical (fracLineSegment) { // 23
+	return arrEqual(fracLineSegment[0][0], fracLineSegment[1][0])
 }
 
-function nextFracVertexIndices (thisFracVertex, fracEdges) {
-	for (i = 0; i < fracEdges.length; i++) {
-		for (j = 0; j < 2; j++) {
-			if (arrEqual(fracEdges[i][j], thisFracVertex)) {
-				return [ i, 1-j ]
+function nextFracVertexIndices (thisFracVertex, fracEdges) { // 24
+	for (a = 0; a < fracEdges.length; a++) {
+		for (b = 0; b < 2; b++) {
+			if (arrEqual(fracEdges[a][b], thisFracVertex)) {
+				return [ a, 1 - b ]
 			}
 		}
 	}
 }
 
-function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
+function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) { // 25
 	cutPoints = fracTriangles.map(function (fracTriangle) {
 		return [
 			[ fracTriangle[0], fracTriangle[1] ],
@@ -268,21 +288,21 @@ function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
 			[ fracTriangle[0], fracTriangle[2] ]
 		]
 	})
-	for (i = 0; i < fracTriangles.length; i++) {
-		for (j = i + 1; j < fracTriangles.length; j++) {
-			unorderedCutPoints = unorderedCutFracPointsOfTwoFracTriangles(fracTriangles[i], fracTriangles[j])
-			cutPoints[i][0] = cutPoints[i][0].concat(unorderedCutPoints.a)
-			cutPoints[i][1] = cutPoints[i][1].concat(unorderedCutPoints.b)
-			cutPoints[i][2] = cutPoints[i][2].concat(unorderedCutPoints.c)
-			cutPoints[j][0] = cutPoints[j][0].concat(unorderedCutPoints.d)
-			cutPoints[j][1] = cutPoints[j][1].concat(unorderedCutPoints.e)
-			cutPoints[j][2] = cutPoints[j][2].concat(unorderedCutPoints.f)
+	for (iteratorI = 0; iteratorI < fracTriangles.length; iteratorI++) {
+		for (iteratorJ = iteratorI + 1; iteratorJ < fracTriangles.length; iteratorJ++) {
+			unorderedCutPoints = unorderedCutFracPointsOfTwoFracTriangles(fracTriangles[iteratorI], fracTriangles[iteratorJ])
+			cutPoints[iteratorI][0] = cutPoints[iteratorI][0].concat(unorderedCutPoints.a)
+			cutPoints[iteratorI][1] = cutPoints[iteratorI][1].concat(unorderedCutPoints.b)
+			cutPoints[iteratorI][2] = cutPoints[iteratorI][2].concat(unorderedCutPoints.c)
+			cutPoints[iteratorJ][0] = cutPoints[iteratorJ][0].concat(unorderedCutPoints.d)
+			cutPoints[iteratorJ][1] = cutPoints[iteratorJ][1].concat(unorderedCutPoints.e)
+			cutPoints[iteratorJ][2] = cutPoints[iteratorJ][2].concat(unorderedCutPoints.f)
 		}
 	}
-	for (i = 0; i < cutPoints.length; i++) {
-		for (j = 0; j < 3; j++) {
-			cutPoints[i][j] = removeDuplicates(cutPoints[i][j])
-			cutPoints[i][j].sort(function (cutPointA, cutPointB) {
+	for (iteratorI = 0; iteratorI < cutPoints.length; iteratorI++) {
+		for (iteratorJ = 0; iteratorJ < 3; iteratorJ++) {
+			cutPoints[iteratorI][iteratorJ] = removeDuplicates(cutPoints[iteratorI][iteratorJ])
+			cutPoints[iteratorI][iteratorJ].sort(function (cutPointA, cutPointB) {
 				if (arrEqual(cutPointA[0], cutPointB[0])) {
 					return sortFrac(cutPointA[1], cutPointB[1])
 				} else {
@@ -302,119 +322,26 @@ function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
 	return result
 }
 
-function partitionOfSimplePolygonsByDisjointness (simplePolygons) {
-	superset = simplePolygons.map(function () {
-		return []
-	})
-	for (i = 0; i < simplePolygons.length; i++) {
-		for (j = 0; j < simplePolygons.length; j++) {
-			if (i != j && fracPointInSimplePolygon(simplePolygons[i][0], simplePolygons[j])) {
-				superset[i].push(j)
-			}
-		}
-	}
-	// superset = [ [], [ 0 ], [ 0 ], [ 0, 2 ], [ 0, 2 ], [ 0, 2, 4 ], [ 0, 2, 4 ], [ 0, 2, 4, 6 ], [ 0, 2, 4, 6 ] ]
-	setObjs = superset.map(function (element, index) {
-		return {
-			setIndex: index,
-			superset: element
-		}
-	})
-/*
-	setObjs = [
-		{ setIndex: 0, superset: [] },
-		{ setIndex: 1, superset: [ 0 ] },
-		{ setIndex: 2, superset: [ 0 ] },
-		{ setIndex: 3, superset: [ 0, 2 ] },
-		{ setIndex: 4, superset: [ 0, 2 ] },
-		{ setIndex: 5, superset: [ 0, 2, 4 ] },
-		{ setIndex: 6, superset: [ 0, 2, 4 ] },
-		{ setIndex: 7, superset: [ 0, 2, 4, 6 ] },
-		{ setIndex: 8, superset: [ 0, 2, 4, 6 ] }
-	]
-*/
-	multiPolygon = []
-	while (setObjs.length > 0) {
-		elements = []
-		parents = setObjs.filter(function (setObj) {
-			return (setObj.superset.length == 0)
-		}).map(function (setObj) {
-			return setObj.setIndex
-		})
-		for (parent of parents) {
-			child = setObjs.filter(function (setObj) {
-				return arrEqual(setObj.superset, [ parent ])
-			}).map(function (setObj) {
-				return setObj.setIndex
-			})
-			multiPolygon.push([ parent ].concat(child))
-			elements.push(parent)
-			elements = elements.concat(child)
-		}
-		setObjs = setObjs.filter(function (setObj) {
-			return (setObj.superset.length > 1)
-		})
-		for (setObj of setObjs) {
-			setObj.superset = setObj.superset.filter(function (element) {
-				return (elements.indexOf(element) == -1)
-			})
-		}
-	}
-	return multiPolygon.map(function (polygon) {
-		return polygon.map(function (simplePolygon) {
-			return simplePolygons[simplePolygon]
-		})
-	})
-}
-
-function removeDuplicates (arr) {
+function removeDuplicates (arr) { // 26
 	result = []
-	for (element of arr) {
-		if (isNewElement(element, result)) {
-			result.push(element)
+	for (el of arr) {
+		if (isNewElement(el, result)) {
+			result.push(el)
 		}
 	}
 	return result
 }
 
-function sortFrac (fracA, fracB) {
+function sortFrac (fracA, fracB) { // 27
 	return (fracDifference(fracA, fracB)[0] > 0) - 0.5
 }
 
-function substituteFracIntoFracEquation (fracX, fracEquation) {
+function substituteFracIntoFracEquation (fracX, fracEquation) { // 28
 	// fracEquation is not a vertical line
 	return fracSum(fracProduct(fracEquation[0], fracX), fracEquation[1])
 }
 
-function triangulateSimplePolygon (simplePolygon) {
-	// dependency: isReflexAngle
-	// ... (3)
-}
-
-function unionOfManyFracTraiangles (...fracTriangles) {
-	// return multipolygon
-	fracEdges = partitionOfFracEdgesByUnionOfManyFracTraiangles(...fracTriangles).filter(function (fracEdge) {
-		return !fracLineSegmentInUnionOfFracTriangles(fracEdge, ...fracTriangles)
-	})
-	simplePolygons = []
-	while (fracEdges.length > 0) {
-		simplePolygon = fracEdges[fracEdges.length - 1]
-		fracEdges.pop()
-		while (!arrEqual(simplePolygon[simplePolygon.length - 1], simplePolygon[0])) {
-			indices = nextFracVertexIndices(simplePolygon[simplePolygon.length - 1], fracEdges)
-			i = indices[0]
-			j = indices[1]
-			simplePolygon.push(fracEdges[i][j])
-			arr1 = (i > 0) ? fracEdges.slice(0, i) : []
-			arr2 = (i < fracEdges.length - 1) ? fracEdges.slice(i + 1) : []
-			fracEdges = arr1.concat(arr2)
-		}
-		simplePolygons.push(simplePolygon)
-	}
-	return partitionOfSimplePolygonsByDisjointness(simplePolygons)
-}
-
-function unorderedCutFracPointsOfTwoFracTriangles (fracTriangle1, fracTriangle2) {
+function unorderedCutFracPointsOfTwoFracTriangles (fracTriangle1, fracTriangle2) { // 29
 	fracLineSegments1 = {
 		a: [ fracTriangle1[0], fracTriangle1[1] ],
 		b: [ fracTriangle1[1], fracTriangle1[2] ],
@@ -435,7 +362,7 @@ function unorderedCutFracPointsOfTwoFracTriangles (fracTriangle1, fracTriangle2)
 	}
 	for (fracLineSegment1 in fracLineSegments1) {
 		for (fracLineSegment2 in fracLineSegments2) {
-			if (!isParallelTo(fracLineSegments1[fracLineSegment1], fracLineSegments2[fracLineSegment2]) {
+			if (!isParallelTo(fracLineSegments1[fracLineSegment1], fracLineSegments2[fracLineSegment2])) {
 				cutFracPoint = cutFracPointOfNonParallelFracLineSegments(fracLineSegments1[fracLineSegment1], fracLineSegments2[fracLineSegment2])
 				if (cutFracPoint) {
 					cutFracPoints[fracLineSegment1].push(cutFracPoint)
