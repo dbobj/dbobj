@@ -231,13 +231,21 @@ function fracPointOnFracLineSegment (fracPoint, fracLineSegment) {
 	if (arrEqual(fracLineSegment[0], fracPoint) || arrEqual(fracLineSegment[1], fracPoint)) {
 		return "boundary"
 	}
-	if (isVertical(fracLineSegment) && fracProduct(fracDifference(fracLineSegment[0][1], fracPoint[1]), fracDifference(fracLineSegment[1][1], fracPoint[1]))[0] > 0) {
-		return "exterior"
+	if (isVertical(fracLineSegment)) {
+		xMatch = (arrEqual(fracPoint[0], fracLineSegment[0][0]))
+		if (xMatch && fracProduct(fracDifference(fracLineSegment[0][1], fracPoint[1]), fracDifference(fracLineSegment[1][1], fracPoint[1]))[0] < 0)
+			return "interior"
+		} else {
+			return "exterior"
+		}
+	} else {
+		xBetween = (fracProduct(fracDifference(fracLineSegment[0][0], fracPoint[0]), fracDifference(fracLineSegment[1][0], fracPoint[0]))[0] < 0) {
+		if (xBetween && arrEqual(fracSlopeFromTwoFracPoints(fracLineSegment[0], fracPoint), fracSlopeFromTwoFracPoints(fracLineSegment[1], fracPoint))) {
+			return "interior"
+		} else {
+			return "exterior"
+		}
 	}
-	if (!isVertical(fracLineSegment) && fracProduct(fracDifference(fracLineSegment[0][0], fracPoint[0]), fracDifference(fracLineSegment[1][0], fracPoint[0]))[0] > 0) {
-		return "exterior"
-	}
-	return "interior"
 }
 
 function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) { // TESTED
