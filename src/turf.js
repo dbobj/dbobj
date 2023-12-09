@@ -106,25 +106,21 @@ function fracPointInFracMultipolygon (fracPoint, fracMultipolygon) {
 	filteredFracLineSegments = []
 	xMin = null
 	for (fracLineSegment of fracLineSegments) {
-		test1 = (fracDifference(simpleFracPolygon[i-1][0], fracPoint[0])[0] < 0 || fracDifference(simpleFracPolygon[i][0], fracPoint[0])[0] < 0)
-		test2 = (fracProduct(fracDifference(simpleFracPolygon[i-1][1], fracPoint[1]), fracDifference(simpleFracPolygon[i][1], fracPoint[1]))[0] < 0)
-		if (test1 && test2) {
-			if (fracPointOnFracLineSegment(fracPoint, fracLineSegment) != "exterior") {
-				return "boundary"
-			}
-			filteredFracLineSegments.push((fracLineSegment)
-			if (!xMin || fracDifference(fracLineSegment[0][0], xMin)[0] < 0) {
-				xMin = fracLineSegment[0][0]
-			}
-			if (fracDifference(fracLineSegment[1][0], xMin)[0] < 0) {
-				xMin = fracLineSegment[1][0]
-			}
+		if (fracPointOnFracLineSegment(fracPoint, fracLineSegment) != "exterior") {
+			return "boundary"
+		}
+		filteredFracLineSegments.push((fracLineSegment)
+		if (!xMin || fracDifference(fracLineSegment[0][0], xMin)[0] < 0) {
+			xMin = fracLineSegment[0][0]
+		}
+		if (fracDifference(fracLineSegment[1][0], xMin)[0] < 0) {
+			xMin = fracLineSegment[1][0]
 		}
 	}
-	testLineSegment = [ [ fracDifference(xMin, [ 1, 1 ]), fracPoint[1] ], fracPoint ]
+	testFracLineSegment = [ [ fracDifference(xMin, [ 1, 1 ]), fracPoint[1] ], fracPoint ]
 	intersections = []
 	for (filteredFracLineSegment of filteredFracLineSegments) {
-		intersection = intersectionFracPointOfNonParallelFracLineSegments(filteredFracLineSegment, testLineSegment)
+		intersection = intersectionFracPointOfNonParallelFracLineSegments(filteredFracLineSegment, testFracLineSegment)
 		if (intersection) {
 			intersections.push(intersection)
 		}
@@ -232,6 +228,32 @@ function intersectionFracPointOfNonParallelFracLineSegments (fracLineSegment1, f
 	}
 }
 
+function isEar (fracVertex, fracMultipolygon) {
+	// return true or false
+	fracLineSegments = []
+	testFracLineSegment = null
+	for (fracPolygon of fracMultipolygon) {
+		for (simpleFracPolygon of fracPolygon) {
+			if (arrEqual(simpleFracPolygon[0], fracVertex)) {
+				testFracLineSegment = [ simpleFracPolygon[1], simpleFracPolygon[simpleFracPolygon.length - 2] ]
+			}
+			for (i = 1; i < simpleFracPolygon.length; i++) {
+				fracLineSegments.push([ simpleFracPolygon[i-1], simpleFracPolygon[i] ])
+				if (!testFracLineSegment && arrEqual(simpleFracPolygon[i], fracVertex)) {
+					testFracLineSegment = [ simpleFracPolygon[i-1], simpleFracPolygon[i+1] ]
+				}
+			}
+		}
+	}
+	for (fracLineSegment of fracLineSegments) {
+		if (!isParallelTo(fracLineSegment, testFracLineSegment) && cutFracPointOfNonParallelFracLineSegments(fracLineSegment, testFracLineSegment)) {
+			return false
+		}
+	}
+	midpoint = [ fracProduct(fracSum(testFracLineSegment[0][0], testFracLineSegment[1][0]), [ 1, 2 ]), fracProduct(fracSum(testFracLineSegment[0][1], testFracLineSegment[1][1]), [ 1, 2 ]) ]
+	return (fracPointInFracMultipolygon(midpoint, fracMultipolygon) != "exterior")
+}
+
 function isNewElement (testElement, arr) { // TESTED
 	for (element of arr) {
 		if (arrEqual(element, testElement)) {
@@ -317,6 +339,77 @@ function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) { //
 	return result
 }
 
+function partitionOfSimpleFracPolygonsByDisjointness (simpleFracPolygons) {
+	superset = simpleFracPolygons.map(function () {
+		return []
+	})
+	for (i = 0; i < simpleFracPolygons.length; i++) {
+		for (j = 0; j < simpleFracPolygons.length; j++) {
+			if (i != j && fracPointInFracMultipolygon(simpleFracPolygons[i][0], [ simpleFracPolygons[j] ])) {
+				superset[i].push(j)
+			}
+		}
+	}
+	// superset = [ [], [ 0 ], [ 0 ], [ 0, 2 ], [ 0, 2 ], [ 0, 2, 4 ], [ 0, 2, 4 ], [ 0, 2, 4, 6 ], [ 0, 2, 4, 6 ] ]
+	setObjs = superset.map(function (element, index) {
+		return {
+			setIndex: index,
+			superset: element
+		}
+	})
+/*
+	setObjs = [
+		{ setIndex: 0, superset: [] },
+		{ setIndex: 1, superset: [ 0 ] },
+		{ setIndex: 2, superset: [ 0 ] },
+		{ setIndex: 3, superset: [ 0, 2 ] },
+		{ setIndex: 4, superset: [ 0, 2 ] },
+		{ setIndex: 5, superset: [ 0, 2, 4 ] },
+		{ setIndex: 6, superset: [ 0, 2, 4 ] },
+		{ setIndex: 7, superset: [ 0, 2, 4, 6 ] },
+		{ setIndex: 8, superset: [ 0, 2, 4, 6 ] }
+	]
+*/
+	fracMultipolygonIndices = []
+	while (setObjs.length > 0) {
+		elements = []
+		parents = setObjs.filter(function (setObj) {
+			return (setObj.superset.length == 0)
+		}).map(function (setObj) {
+			return setObj.setIndex
+		})
+		for (parent of parents) {
+			child = setObjs.filter(function (setObj) {
+				return arrEqual(setObj.superset, [ parent ])
+			}).map(function (setObj) {
+				return setObj.setIndex
+			})
+			fracMultipolygonIndices.push([ parent ].concat(child))
+			elements.push(parent)
+			elements = elements.concat(child)
+		}
+		setObjs = setObjs.filter(function (setObj) {
+			return (setObj.superset.length > 1)
+		})
+		for (setObj of setObjs) {
+			setObj.superset = setObj.superset.filter(function (element) {
+				return (elements.indexOf(element) == -1)
+			})
+		}
+	}
+	return fracMultipolygonIndices.map(function (fracPolygonIndices) {
+		return fracPolygonIndices.map(function (simpleFracPolygonIndex, i) {
+			simpleFracPolygon = simpleFracPolygons[simpleFracPolygonIndex]
+			criterion1 = (i == 0) - 0.5
+			criterion2 = (fracAreaOfSimpleFracPolygon(simpleFracPolygon)[0] > 0) - 0.5
+			if (criterion1 * criterion2 < 0) {
+				simpleFracPolygon.reverse()
+			}
+			return simpleFracPolygon
+		})
+	})
+}
+
 function removeDuplicates (arr) { // TESTED
 	result = []
 	for (el of arr) {
@@ -334,6 +427,48 @@ function sortFrac (fracA, fracB) { // TESTED
 function substituteFracIntoFracEquation (fracX, fracEquation) { // TESTED
 	// fracEquation is not a vertical line
 	return fracSum(fracProduct(fracEquation[0], fracX), fracEquation[1])
+}
+
+function triangulateFracMultipolygon (fracMultipolygon) {
+	// return array of triangles (as simple polygons)
+	// ......
+}
+
+function unionOfManyFracTraiangles (...fracTriangles) {
+	// return multipolygon
+	indicesOfRedundantFracTriangles = []
+	for (i = 0; i < fracTriangles.length; i++) {
+		for (j = 0; j < fracTriangles.length; j++) {
+			if (i != j && isSubsetOf(fracTriangles[i], fracTriangles[j])) {
+				indicesOfRedundantFracTriangles.push(i)
+			}
+		}
+	}
+	fracTrianglesInput = []
+	for (i = 0; i < fracTriangles.length; i++) {
+		if (indicesOfRedundantFracTriangles.indexOf(i) == -1) {
+			fracTrianglesInput.push(fracTriangles[i])
+		}
+	}
+	fracEdges = partitionOfFracEdgesByUnionOfManyFracTraiangles(...fracTrianglesInput).filter(function (fracEdge) {
+		return (fracLineSegmentInUnionOfFracTriangles(fracEdge, ...fracTrianglesInput) == "boundary")
+	})
+	simpleFracPolygons = []
+	while (fracEdges.length > 0) {
+		simpleFracPolygon = fracEdges[fracEdges.length - 1]
+		fracEdges.pop()
+		while (!arrEqual(simpleFracPolygon[simpleFracPolygon.length - 1], simpleFracPolygon[0])) {
+			indices = nextFracVertexIndices(simpleFracPolygon[simpleFracPolygon.length - 1], fracEdges)
+			i = indices[0]
+			j = indices[1]
+			simpleFracPolygon.push(fracEdges[i][j])
+			arr1 = (i > 0) ? fracEdges.slice(0, i) : []
+			arr2 = (i < fracEdges.length - 1) ? fracEdges.slice(i + 1) : []
+			fracEdges = arr1.concat(arr2)
+		}
+		simpleFracPolygons.push(simpleFracPolygon)
+	}
+	return partitionOfSimpleFracPolygonsByDisjointness(simpleFracPolygons)
 }
 
 function unorderedCutFracPointsOfTwoFracTriangles (fracTriangle1, fracTriangle2) { // TESTED
