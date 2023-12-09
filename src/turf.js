@@ -140,40 +140,42 @@ function fracLineSegmentInUnionOfFracTriangles (fracLineSegment, ...fracTriangle
 
 function fracPointInFracMultipolygon (fracPoint, fracMultipolygon) {
 	fracLineSegments = []
+	xMin = null
 	for (fracPolygon of fracMultipolygon) {
 		for (simpleFracPolygon of fracPolygon) {
 			for (i = 1; i < simpleFracPolygon.length; i++) {
 				if (arrEqual(simpleFracPolygon[i], fracPoint)) {
 					return "boundary"
 				}
-				// at least one x-coord < fracPoint[0], i.e. ...; and
-				// fracPoint[1] is between two y-coords, i.e. ...
-				fracLineSegments.push([ simpleFracPolygon[i-1], simpleFracPolygon[i] ])
+				if (arrEqual(simpleFracPolygon[i-1][1], fracPoint[1]) && arrEqual(simpleFracPolygon[i][1], fracPoint[1])) {
+					test = fracProduct(fracDifference(simpleFracPolygon[i-1][0], fracPoint[0]), fracDifference(simpleFracPolygon[i][0], fracPoint[0]))
+					if (test[0] < 0) {
+						return "boundary"
+					}
+				}
+				test1 = (fracDifference(simpleFracPolygon[i-1][0], fracPoint[0])[0] < 0 || fracDifference(simpleFracPolygon[i][0], fracPoint[0])[0] < 0)
+				test2 = (fracProduct(fracDifference(simpleFracPolygon[i-1][1], fracPoint[1]), fracDifference(simpleFracPolygon[i][1], fracPoint[1]))[0] < 0)
+				if (test1 && test2) {
+					fracLineSegments.push([ simpleFracPolygon[i-1], simpleFracPolygon[i] ])
+					if (!xMin || fracDifference(simpleFracPolygon[i][0], xMin)[0] < 0) {
+						xMin = simpleFracPolygon[i][0]
+					}
+				}
 			}
 		}
 	}
+	testLineSegment = [ [ xMin, fracPoint[1] ], fracPoint ]
+	intersections = []
 	for (fracLineSegment of fracLineSegments) {
-		if (arrEqual(fracLineSegment[0][1], fracPoint[1]) && arrEqual(fracLineSegment[1][1], fracPoint[1])) {
-			test = fracProduct(fracDifference(fracLineSegment[0][0], fracPoint[0]), fracDifference(fracLineSegment[1][0], fracPoint[0]))
-			if (test[0] < 0) {
-				return "boundary"
-			}
+		intersection = intersectionFracPointOfNonParallelFracLineSegments(/*...*/, /*...*/)
+		if (intersection) {
+			intersections.push(intersection)
 		}
-	}			
-	fracPoints.sort(function (fracPointA, fracPointB) {
-		return sortFrac(fracPointA[0], fracPointB[0])
+	}
+	cuts = removeDuplicates(intersections).filter(function (cut) {
+		return (fracDifference(cut[0], fracPoint[0])[0] < 0)
 	})
-	xMin = fracDifference(fracPoints[0][0], [ 1, 1 ])
-	xMax = fracSum(fracPoints[fracPoints.length - 1][0], [ 1, 1 ])
-	testLineSegment = [ [ xMin, fracPoint[1] ], [ xMax, fracPoint[1] ] ]
-	count = 0
-	for (fracLineSegment of fracLineSegments) {
-		intersection = intersectionFracPointOfNonParallelFracLineSegments(..., ...)
-		if (...) {
-			count = count + 1
-		}
-	}
-	if (count % 2 == 0) {
+	if (cuts.length % 2 == 0) {
 		return "exterior"
 	} else {
 		return "interior"
