@@ -187,6 +187,19 @@ function fracPointInFracTriangle (fracPoint, fracTriangle) { // TESTED
 	return fracPointSatisfiesFracInequalities(fracPoint, fracInequalitiesOfFracTriangle(fracTriangle))
 }
 
+function fracPointOnFracLineSegment (fracPoint, fracLineSegment) {
+	if (arrEqual(fracLineSegment[0], fracPoint) || arrEqual(fracLineSegment[1], fracPoint)) {
+		return "boundary"
+	}
+	if (isVertical(fracLineSegment) && fracProduct(fracDifference(fracLineSegment[0][1], fracPoint[1]), fracDifference(fracLineSegment[1][1], fracPoint[1]))[0] > 0) {
+		return "exterior"
+	}
+	if (!isVertical(fracLineSegment) && fracProduct(fracDifference(fracLineSegment[0][0], fracPoint[0]), fracDifference(fracLineSegment[1][0], fracPoint[0]))[0] > 0) {
+		return "exterior"
+	}
+	return "interior"
+}
+
 function fracPointSatisfiesFracInequalities (fracPoint, fracInequalities) { // TESTED
 	result = fracInequalities.map(function (fracInequality) {
 		return fracPointSatisfiesFracInequality(fracPoint, fracInequality)
