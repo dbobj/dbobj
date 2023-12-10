@@ -6,6 +6,16 @@ function arrEqual (arr1, arr2) { // TESTED
 	}
 }
 
+function complementOfFracMultipolygon (fracMultipolygon, xMin, xMax, yMin, yMax) {
+	simpleFracPolygons = []
+	for (fracPolygon of fracMultipolygon) {
+		for (simpleFracPolygon of fracPolygon) {
+			simpleFracPolygons.push(simpleFracPolygon)
+		}
+	}
+	return partitionOfSimpleFracPolygonsByDisjointness([ [ xMin, yMin ], [ xMax, yMin ], [ xMax, yMax ], [ xMin, yMax ] ], ...simpleFracPolygons)
+}
+
 function cutFracPointOfNonParallelFracEquations (fracEquation, nonVerticalFracEquation) {
 	if (fracEquation[0]) {
 		fracX = fracQuotient(fracDifference(fracEquation[1], nonVerticalFracEquation[1]), fracDifference(nonVerticalFracEquation[0], fracEquation[0]))
@@ -28,6 +38,36 @@ function cutFracPointOfNonParallelFracLineSegments (fracLineSegment1, fracLineSe
 		}
 	}
 	return intersection
+}
+
+function differenceOfFracMultipolygons (fracMultipolygon1, fracMultipolygon2) {
+	maxAbsVal = 0
+	for (fracPolygon of fracMultipolygon1) {
+		for (fracSimplePolygon of fracPolygon) {
+			for (fracVertex of fracSimplePolygon) {
+				if (Math.abs(fracVertex[0][0]) > maxAbsVal) {
+					maxAbsVal = Math.abs(fracVertex[0][0])
+				}
+				if (Math.abs(fracVertex[1][0]) > maxAbsVal) {
+					maxAbsVal = Math.abs(fracVertex[1][0])
+				}
+			}
+		}
+	}
+	for (fracPolygon of fracMultipolygon2) {
+		for (fracSimplePolygon of fracPolygon) {
+			for (fracVertex of fracSimplePolygon) {
+				if (Math.abs(fracVertex[0][0]) > maxAbsVal) {
+					maxAbsVal = Math.abs(fracVertex[0][0])
+				}
+				if (Math.abs(fracVertex[1][0]) > maxAbsVal) {
+					maxAbsVal = Math.abs(fracVertex[1][0])
+				}
+			}
+		}
+	}
+	complementOfFracMultipolygon1 = complementOfFracMultipolygon(fracMultipolygon1, [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ], [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ])
+	return complementOfFracMultipolygon(unionOfManyFracMultipolygons(complementOfFracMultipolygon1, fracMultipolygon2), [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ], [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ])
 }
 
 function findOneFracTriangleFromSimpleFracPolygon (simpleFracPolygon) {
@@ -340,6 +380,28 @@ function intersectionFracPointOfNonParallelFracLineSegments (fracLineSegment1, f
 	}
 }
 
+function intersectionOfManyFracMultipolygons(...fracMultipolygons) {
+	maxAbsVal = 0
+	for (fracMultipolygon of fracMultipolygons) {
+		for (fracPolygon of fracMultipolygon) {
+			for (fracSimplePolygon of fracPolygon) {
+				for (fracVertex of fracSimplePolygon) {
+					if (Math.abs(fracVertex[0][0]) > maxAbsVal) {
+						maxAbsVal = Math.abs(fracVertex[0][0])
+					}
+					if (Math.abs(fracVertex[1][0]) > maxAbsVal) {
+						maxAbsVal = Math.abs(fracVertex[1][0])
+					}
+				}
+			}
+		}
+	}
+	complements = fracMultipolygons.map(function (fracMultipolygon) {
+		return complementOfFracMultipolygon(fracMultipolygon, [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ], [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ])
+	})
+	return complementOfFracMultipolygon(unionOfManyFracMultipolygons(...complements), [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ], [ -maxAbsVal, 1 ], [ maxAbsVal, 1 ])
+}
+
 function isNewElement (testElement, arr) {
 	for (element of arr) {
 		if (arrEqual(element, testElement)) {
@@ -438,6 +500,7 @@ function partitionOfFracEdgesByUnionOfManyFracTraiangles (...fracTriangles) {
 }
 
 function partitionOfSimpleFracPolygonsByDisjointness (simpleFracPolygons) {
+	// return multipolygon
 	superset = simpleFracPolygons.map(function () {
 		return []
 	})
@@ -555,6 +618,14 @@ function triangulateSimpleFracPolygon (simpleFracPolygon) {
 		fracDiff = obj.fracDiff
 	}
 	return triangles
+}
+
+function unionOfManyFracMultipolygons (...fracMultipolygons) {
+	fracTriangles = []
+	for (fracMultipolygon of fracMultipolygons) {
+		fracTriangles = fracTriangles.concat(triangulateFracMultipolygon(fracMultipolygon))
+	}
+	return unionOfManyFracTriangles(...fracTriangles)
 }
 
 function unionOfManyFracTraiangles (...fracTriangles) {
