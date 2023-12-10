@@ -527,6 +527,15 @@ function substituteFracIntoFracEquation (fracX, fracEquation) {
 	return fracSum(fracProduct(fracEquation[0], fracX), fracEquation[1])
 }
 
+function triangulateFracMultipolygon (fracMultipolygon) {
+	// return array of triangles (as simple polygons)
+	triangles = []
+	for (fracPolygon of fracMultipolygon) {
+		triangles = triangles.concat(triangulateFracPolygon(fracPolygon))
+	}
+	return triangles
+}
+
 function triangulateFracPolygon (fracPolygon) {
 	// return array of triangles (as simple polygons)
 	if (fracPolygon.length == 1) {
