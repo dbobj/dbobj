@@ -303,17 +303,17 @@ function fracPolygonToWeaklySimplePolygon (fracPolygon) {
 			finish = false
 			for (j = 0; j < fracPolygon[0].length; j++) {
 				for (k = 0; k < fracPolygon[i].length; k++) {
-					testFracLineSegment = [ fracPolygon[0][j], fracPolygon[i][k] ]
-					if (fracLineSegmentInFracPolygon(testFracLineSegment, fracPolygon)) {
+					test = [ fracPolygon[0][j], fracPolygon[i][k] ]
+					if (fracLineSegmentInFracPolygon(test, fracPolygon)) {
 						check = true
 						for (newEdge of newEdges) {
-							if (!isParallelTo(newEdge, testFracLineSegment) && cutFracPointOfNonParallelFracLineSegments(newEdge, testFracLineSegment)) {
+							if (!isParallelTo(newEdge, test) && cutFracPointOfNonParallelFracLineSegments(newEdge, test)) {
 								check = false
 								break
 							}
 						}
 						if (check) {
-							newEdges.push(testFracLineSegment)
+							newEdges.push(test)
 							finish = true
 							break
 						}
@@ -324,18 +324,38 @@ function fracPolygonToWeaklySimplePolygon (fracPolygon) {
 				}
 			}
 		}
-		weaklySimplePolygon = [ edges[0][0] ]
-		newElement = null
+		startElements = undefined
+		for (edge of edges) {
+			included = false
+			for (newEdge of newEdges) {
+				for (newEdgeVertex of newEdge) {
+					if (arrEqual(edge[0], newEdgeVertex) || arrEqual(edge[1], newEdgeVertex)) {
+						included = true
+						break
+					}
+				}
+				if (included) {
+					break
+				}
+			}
+			if (!included) {
+				startElements = edge
+				break
+			}
+		}
+		weaklySimplePolygon = startElements
+		newElement = undefined
 		bool = true
-		while (!arrEqual(newElement, edges[0][0])) {
-			attempt = nextVertexIndices(newElement, newEdges)
+		while (!arrEqual(newElement, startElements[0])) {
+			newElement = newElement ?? startElements[1]
+			attempt = nextFracVertexIndices(weaklySimplePolygon[weaklySimplePolygon.length - 2], newElement, newEdges)
 			if (bool && attempt) {
 				i = attempt[0]
 				j = attempt[1]
 				newElement = newEdges[i][j]
 				bool = false
 			} else {
-				indices = nextVertexIndices(newElement, edges)
+				indices = nextFracVertexIndices(weaklySimplePolygon[weaklySimplePolygon.length - 2], newElement, edges)
 				i = indices[0]
 				j = indices[1]
 				newElement = edges[i][j]
@@ -499,10 +519,10 @@ function isVertical (fracLineSegment) {
 	return arrEqual(fracLineSegment[0][0], fracLineSegment[1][0])
 }
 
-function nextFracVertexIndices (thisFracVertex, fracEdges) {
+function nextFracVertexIndices (prevFracVertex, thisFracVertex, fracEdges) {
 	for (a = 0; a < fracEdges.length; a++) {
 		for (b = 0; b < 2; b++) {
-			if (arrEqual(fracEdges[a][b], thisFracVertex)) {
+			if (arrEqual(fracEdges[a][b], thisFracVertex) && !arrEqual(fracEdges[a][1-b], prevFracVertex)) {
 				return [ a, 1 - b ]
 			}
 		}
@@ -733,7 +753,7 @@ function unionOfManyFracTriangles (...fracTriangles) {
 	while (fracEdges.length > 0) {
 		simpleFracPolygon = fracEdges[fracEdges.length - 1]
 		while (!arrEqual(simpleFracPolygon[simpleFracPolygon.length - 1], simpleFracPolygon[0])) {
-			indices = nextFracVertexIndices(simpleFracPolygon[simpleFracPolygon.length - 1], fracEdges)
+			indices = nextFracVertexIndices(simpleFracPolygon[simpleFracPolygon.length - 2], simpleFracPolygon[simpleFracPolygon.length - 1], fracEdges)
 			i = indices[0]
 			j = indices[1]
 			simpleFracPolygon.push(fracEdges[i][j])
